@@ -11,14 +11,15 @@ Autor: Alexandre Santarossa
 https://www.canva.com/design/DAGp2LUF3z0/1jQNgn-ZHqvrrTDHpgg8sQ/edit?utm_content=DAGp2LUF3z0&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton
 
 ## Estrutura do Repositório
-- **clothinglang.l**           – Definições do lexer (Flex) para tokens da linguagem
-- **clothinglang.y**           – Gramática Bison (EBNF → regras sintáticas); gera parser em C.
-- **clothinglang.output**      – Relatório de análise sintática (`bison -v`)  
-- **lex.yy.c**                 – Código gerado pelo Flex  
-- **clothinglang.tab.c**       – Código gerado pelo Bison  
-- **clothinglang.tab.h**       – Header gerado pelo Bison  
+- **clothinglang.l**           – Definições do lexer (Flex) para tokens da linguagem (sem if/while)
+- **clothinglang.y**           – Gramática Bison (EBNF → regras sintáticas); gera parser em C. (sem if/while)
+- **clothinglang.output**      – Relatório de análise sintática (`bison -v`) (sem if/while)  
+- **lex.yy.c**                 – Código gerado pelo Flex  (sem if/while)
+- **clothinglang.tab.c**       – Código gerado pelo Bison  (sem if/while)
+- **clothinglang.tab.h**       – Header gerado pelo Bison  (sem if/while)
 - **clothinglang_compiler.py** – Interpretador em Python, baseado na versão 2.4 desenvolvido ao longo do semestre
-- **testecompleto.cl**         – Suíte de testes de exemplo de criação de peças e processos
+- **testecompleto.cl**         – Suíte de testes de exemplo de criação de peças e processos, para utilizar na versão python
+- **testeflexbison.cl**        - Suíte de testes de exemplo de criação de peças e processos, sem if ou while, para utilizar na versão Flex+Bison
 
 ## Gramática EBNF
 ```
@@ -27,38 +28,40 @@ LETTER = ( "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l"
 
 DIGIT = ( "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" );
 
-NUMBER = DIGIT, {DIGIT};
+NUMBER       = DIGIT, { DIGIT };
+STRING       = '"' , { LETTER | DIGIT | "_" | " " } , '"';
+IDENTIFIER   = LETTER, { LETTER | DIGIT | "_" };
 
-STRING = '"', {LETTER | " "}, '"';
+PECA_TYPE    = "camiseta" | "calca" | "blusa" | "saia" | "vestido" | "bermuda";
+TECIDO_TYPE  = "algodao" | "jeans" | "seda" | "malha" | "la" | "linho";
+COR_TYPE     = "azul" | "preto" | "branco" | "vermelho" | "verde" | "amarelo" | "rosa" | "roxo" | "laranja";
+TAMANHO_TYPE = "PP" | "P" | "M" | "G" | "GG";
 
-IDENTIFIER = LETTER, {LETTER | DIGIT | "_"};  
+COMANDO      = "CORTAR"    , IDENTIFIER , "EM"   , IDENTIFIER , ";" 
+             | "COSTURAR" , IDENTIFIER , ";" 
+             | "AJUSTAR"  , IDENTIFIER , "PARA" , TAMANHO_TYPE , ";" 
+             | "FINALIZAR", IDENTIFIER , ";";
 
-VALUE = STRING | NUMBER;
+CREATE       = "CREATE" , PECA_TYPE , STRING , "{"
+                 , "TECIDO"  , "=" , TECIDO_TYPE  , ";"
+                 , "COR"     , "=" , COR_TYPE     , ";"
+                 , "TAMANHO" , "=" , TAMANHO_TYPE , ";"
+               , "}" , { COMANDO };
 
-TECIDOS = "algodão" | "jeans" | "seda" | "malha" | "lã" | "linho" ;
+IF           = "SE" , IDENTIFIER , "==", ( IDENTIFIER | STRING ), "{", { COMANDO }, "}"
+               , "SENAO" , "{", { COMANDO }, "}";
 
-COR = "azul" | "preto" | "branco" | "vermelho" | "verde" | "amarelo" | "rosa" | "roxo" | "laranja" ;
+WHILE        = "ENQUANTO" , IDENTIFIER , "==", ( IDENTIFIER | STRING ), "{", { COMANDO }, "}";
 
-TAMANHO = "PP" | "P" | "M" | "G" | "GG";
+UNIT         = CREATE
+             | IF
+             | WHILE
+             | COMANDO;
 
-PECA = "camiseta" | "calça" | "blusa" | "saia" | "vestido" | "bermuda" ;
-
-PECA_DE_ROUPA = "CREATE", PECA, STRING, "{", 
-    "tecido", "=", TECIDOS, ";", 
-    "cor", "=", COR, ";", 
-    "tamanho", "=", TAMANHO, ";", 
-    "}" ;
-
-PROCESSO = "CORTAR", IDENTIFIER, "EM", IDENTIFIER, ";"
-         | "COSTURAR", IDENTIFIER, ";"
-         | "AJUSTAR", IDENTIFIER, "PARA", TAMANHO, ";"
-         | "FINALIZAR", IDENTIFIER, ";";
-
-PRODUCAO = PECA_DE_ROPA, {PROCESSO};
-
-COMENTARIO = "/*", {LETTER | DIGIT | " "}, "*/";
+PROGRAM      = { UNIT };
 ```
 ## Versão Flex + Bison
+Funciona, porém está numa versão anterior, sem condicionais ou loops, portanto, o recomendado é usar a versão Python.
 ### Dependências
 No Linux (Ubuntu):
 ```
@@ -81,7 +84,7 @@ flex clothinglang.l
 gcc -o clothinglang clothinglang.tab.c lex.yy.c -lfl
 
 # 4. Execute com o suite de testes
-./clothinglang < testecompleto.cl
+./clothinglang < testeflexbison.cl
 ```
 ## Versão Compilador Python
 ### Dependências
