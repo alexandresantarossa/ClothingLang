@@ -13,11 +13,13 @@ CREATE blusa "BlusaComCapuz" {
     cor = verde;
     tamanho = M;
 }
+
 CREATE calca "CalcaJeans" {
     tecido = jeans;
     cor = preto;
     tamanho = P;
 }
+
 COSTURAR BlusaComCapuz;
 COSTURAR CalcaJeans;
 FINALIZAR BlusaComCapuz;
@@ -30,3 +32,29 @@ CREATE bermuda "ShortLinho" {
 }
 CORTAR ShortLinho EM tecidoShort;
 AJUSTAR ShortLinho PARA M;
+
+
+CREATE camiseta "CamisaComLogoEspecial" {
+    tecido = malha;
+    cor = azul;
+    tamanho = M;
+}
+
+SE cor == "azul" {
+    CORTAR CamisaComLogoEspecial EM tecidoAzul;
+} SENAO {
+    CORTAR CamisaComLogoEspecial EM tecidoPadrao;
+}
+
+
+CREATE calca "CalcaJeansGrande" {
+    tecido = jeans;
+    cor = cinza;
+    tamanho = GG;
+}
+
+ENQUANTO tamanho == "GG" {
+    AJUSTAR CalcaJeansGrande PARA G;
+    CORTAR CalcaJeansGrande EM tecidoJeans;
+}
+FINALIZAR CalcaJeansGrande;
